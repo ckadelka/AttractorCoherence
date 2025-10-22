@@ -53,7 +53,7 @@ if __name__ == "__main__":
             all_attractor_coherences.append(robmetrics["AttractorCoherence"])
 
             all_attractors.append(robmetrics["Attractors"])
-        data_dir = os.path.join(repo_dir, "data")
+        data_dir = os.path.join(repo_dir, "data/")
 
         Path(data_dir).mkdir(parents=True, exist_ok=True)
 
