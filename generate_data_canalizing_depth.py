@@ -37,7 +37,6 @@ if __name__ == "__main__":
     
     N = num_nodes
     
-    left_side_of_truth_table = np.array(list(map(np.array,list(itertools.product([0, 1], repeat = num_nodes)))))
     for cd in can_depths:
         all_basin_sizes = []
         all_basin_coherences = []

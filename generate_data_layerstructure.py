@@ -36,15 +36,14 @@ if __name__ == "__main__":
     
     N = num_nodes
     
-    left_side_of_truth_table = np.array(list(map(np.array,list(itertools.product([0, 1], repeat = num_nodes)))))
-    for w in range(1,2**(avg_degree-1)+1,2):
+    for w in range(1,2**(avg_degree-1),2):
         all_basin_sizes = []
         all_basin_coherences = []
         all_attractor_coherences = []
         
         
         all_attractors = []
-        layerstructure_NCF = boolforge.get_layer_structure_of_an_NCF_given_its_Hamming_weight(avg_degree,w)[1]
+        layerstructure_NCF = boolforge.get_layer_structure_of_an_NCF_given_its_Hamming_weight(avg_degree,w)
         print(f"Layer structure for weight {w}: {layerstructure_NCF}")
         
         
