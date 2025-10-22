@@ -4,6 +4,7 @@ import time
 import boolforge
 import pickle
 import os
+from pathlib import Path
 repo_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Repository directory: {repo_dir}")
 if __name__ == "__main__":
@@ -53,6 +54,8 @@ if __name__ == "__main__":
 
             all_attractors.append(robmetrics["Attractors"])
         data_dir = os.path.join(repo_dir, "data")
+
+        Path(data_dir).mkdir(parents=True, exist_ok=True)
 
         # Save to a file
         file_name = f'layeredcanBN_{num_nodes}_{avg_degree}_{layerstructure_NCF}_{num_networks}.pkl'

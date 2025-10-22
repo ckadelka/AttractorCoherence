@@ -4,6 +4,8 @@ import time
 import boolforge
 import pickle
 import os
+from pathlib import Path
+
 repo_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Repository directory: {repo_dir}")
 if __name__ == "__main__":
@@ -45,7 +47,9 @@ if __name__ == "__main__":
             all_attractor_coherences.append(robmetrics["AttractorCoherence"])
 
             all_attractors.append(robmetrics["Attractors"])
-        data_dir = os.path.join(repo_dir, "data")
+        data_dir = os.path.join(repo_dir, "cd")
+
+        Path(data_dir).mkdir(parents=True, exist_ok=True)
 
         # Save to a file
         file_name = f'canBNexactdepth_{num_nodes}_{avg_degree}_{cd}_{num_networks}.pkl'
