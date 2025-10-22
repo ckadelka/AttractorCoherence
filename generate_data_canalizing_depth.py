@@ -6,7 +6,7 @@ import pickle
 import os
 from pathlib import Path
 
-repo_dir = os.path.dirname(os.path.abspath(__file__))
+repo_dir = ''#os.path.dirname(os.path.abspath(__file__))
 print(f"Repository directory: {repo_dir}")
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run network simulations with specified parameters.")
