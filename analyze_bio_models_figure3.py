@@ -52,13 +52,13 @@ for index in good_indices:
         bio_infos.append(bns[index].get_attractors_and_robustness_measures_synchronous(number_different_IC=number_different_IC))
 
 random_infos = []
-rbns = []
+#rbns = [] #commented out to same RAM: the RBN is not needed later, only random_infos
 for index in good_indices:
     random_infos.append([])
-    rbns.append([])
+    #rbns.append([])
     for _ in range(n_null_models):
         rbn = boolforge.random_null_model(bns[index],PRESERVE_BIAS=False,PRESERVE_CANALIZING_DEPTH=False)
-        rbns[-1].append(rbn)
+        #rbns[-1].append(rbn)
         if EXACT:
             random_infos[-1].append(rbn.get_attractors_and_robustness_measures_synchronous_exact())
         else:
