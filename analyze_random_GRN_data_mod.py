@@ -199,7 +199,7 @@ if __name__ == '__main__':
     # Load the pickle file
     num_simulations = 10000
     N = 12
-    ns = [3,4,5,6,7]
+    ns = [5]
     attractor_coherencess = []
     attractor_lengthss = []
     basin_coherencess = []
@@ -214,7 +214,7 @@ if __name__ == '__main__':
         frozen_core_coherencess.append([])
         layer_structuress.append([])
         for w in range(1,2**(n-1),2):
-            layer_structure = boolforge.utils.hamming_weight_to_ncf_layer_structure(n,w)
+            layer_structure = boolforge.utils.hamming_weight_to_ncf_layer_structure(n, w)
             layer_structuress[-1].append(layer_structure)
             filename = f'data/effdeg_frozen_layeredcanBN_{N}_{n}_{layer_structure}_{num_simulations}.pkl'
             with open(filename, 'rb') as f:
@@ -393,7 +393,7 @@ if __name__ == '__main__':
             f = boolforge.random_NCF(n,layer_structure=layer_structure)
             biases.append(f.get_absolute_bias())
             standardized_biases.append(sum(f.f)*(len(f)-sum(f.f))/len(f)**2)
-            avg_sens.append(f.get_average_sensitivity(exact=False,exact=True))
+            avg_sens.append(f.get_average_sensitivity(normalized=False,exact=True))
         for iii,(values_y,name_y) in enumerate(zip([biases,avg_sens],['Absolute bias','Average sensitivity'])):
             for jjj,(values_x,name_x) in enumerate(zip([standardized_biases,biases],['Standardized bias','Absolute bias'])):
                 if iii == 0 and jjj==1:
@@ -454,7 +454,7 @@ if __name__ == '__main__':
             bias_prod_times_eff_degrees.append(0.25*(1-biases[-1]**2) * n * (1-input_redundancies[-1]))
             gap_sizes.append(gap_size)
         counter = 0
-        for iii,(values_y,name_y) in enumerate(zip([aucs_basin,aucs_attractor,difference_aucs],['AUC basin coherence\n(AUC:BC)','AUC attractor coherence\n(AUC:AC)','Coherence gap\n('+r'$\Delta$AUC)'])):
+        for iii,(values_y,name_y) in enumerate(zip([aucs_basin,aucs_attractor,difference_aucs],['AUC basin coherence\n(AUC:BC)','AUC attractor coherence\n(AUC:AC)','Difference in AUC values\n('+r'$\Delta$AUC)'])):
             for jjj,(values_x,name_x) in enumerate(zip([avg_sens,standardized_biases],['Average sensitivity','Standardized bias'])):
                 indices = np.array(gap_sizes)<max_gap_size
                 ax[iii,jjj].scatter(np.array(values_x)[indices],np.array(values_y)[indices],label=str(n),marker=markers[ii],color=colors[ii],s=8*(8-n))

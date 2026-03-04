@@ -30,7 +30,8 @@ number_different_IC = 100
 max_n_fixed_source_networks = 16
 
 #extract networks and remove non-essential regulations
-bns,urls_loaded,urls_not_loaded = boolforge.get_bio_models_from_repository(repository)
+dummy_dict = boolforge.get_bio_models_from_repository(repository)
+bns = dummy_dict['BooleanNetworks']
 for index,bn in enumerate(bns):
     bn.simplify_functions()
 
@@ -67,9 +68,9 @@ for ii,index in enumerate(good_indices):
     for jj,bn in enumerate(bns_to_analyze[ii]):
         print(index,jj,bn.N)
         if EXACT:
-            bio_infos[-1].append(bn.get_attractors_and_robustness_measures_synchronous_exact())
+            bio_infos[-1].append(bn.get_attractors_and_robustness_synchronous_exact())
         else:
-            bio_infos[-1].append(bn.get_attractors_and_robustness_measures_synchronous(number_different_IC=number_different_IC))
+            bio_infos[-1].append(bn.get_attractors_and_robustness_synchronous(number_different_IC=number_different_IC))
 
 #Store results
 basin_sizes = []
@@ -100,7 +101,7 @@ res = []
 for list_of_lists in [attractor_lengths,n_attractors,basin_sizes,basin_coherences,
                       attractor_coherences,basin_fragility,attractor_fragility,
                       model_ids,model_repeats]:
-    res.append(boolforge.flatten(list_of_lists))
+    res.append(boolforge.utils.flatten(list_of_lists))
 res=np.array(res)
 
 #turn fragility into 1-fragility
@@ -112,11 +113,11 @@ suffix_plot = ', '.join(['%s = %s' % (name,str(val)) for val,name in zip([max_N,
 suffix_save = 'bio_'+'_'.join(['%s%s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(EXACT)],['maxN','maxdegree','EXACT'])])
 
 spearman_mat,pearson_mat = utils.compute_correlation_matrices(res[:-2])
-utils.plot_correlation_matrix(spearman_mat,'spearman',names_res[:-2],suffix_plot,suffix_save)
-utils.plot_correlation_matrix(pearson_mat,'pearson',names_res[:-2],suffix_plot,suffix_save)
-utils.plot_attractor_and_basin_coherence_vs_basin_size(res,names_res,suffix_plot,suffix_save)
-utils.plot_attractor_and_basin_coherence_vs_basin_size_nice(res,names_res,suffix_plot,suffix_save)
-utils.plot_attractor_and_basin_fragility_vs_basin_size(res,names_res,suffix_plot,suffix_save)
+# utils.plot_correlation_matrix(spearman_mat,'spearman',names_res[:-2],suffix_plot,suffix_save)
+# utils.plot_correlation_matrix(pearson_mat,'pearson',names_res[:-2],suffix_plot,suffix_save)
+# utils.plot_attractor_and_basin_coherence_vs_basin_size(res,names_res,suffix_plot,suffix_save)
+# utils.plot_attractor_and_basin_coherence_vs_basin_size_nice(res,names_res,suffix_plot,suffix_save)
+# utils.plot_attractor_and_basin_fragility_vs_basin_size(res,names_res,suffix_plot,suffix_save)
 
 
 
@@ -171,7 +172,7 @@ for iii in range(int(SEPARATE)+1):
     for pc in v['bodies']:
         pc.set_facecolor(cmap(2+2*int(iii)))
         pc.set_edgecolor(cmap(2+2*int(iii)))
-ax[3,0].set_ylabel(r'basin $-$ attractor'+'\ncoherence')
+ax[3,0].set_ylabel('coherence gap')
 ax[3,0].plot(res[2][indices],mean_function((res[3] - res[4])[indices],window_size),color='k')
 ax[3,0].text(0.83,-0.6,r'$\Delta$AUC=',ha='right',va='center',color='k')
 ax[3,0].text(1,-0.6,str(round(utils.get_auc(res[2],res[3]-res[4],n_points),3)),ha='right',va='center',color='k')

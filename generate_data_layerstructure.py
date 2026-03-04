@@ -33,7 +33,7 @@ if __name__ == "__main__":
         
         
         all_attractors = []
-        layerstructure_NCF = boolforge.get_layer_structure_of_an_NCF_given_its_Hamming_weight(avg_degree,w)
+        layerstructure_NCF = boolforge.utils.hamming_weight_to_ncf_layer_structure(avg_degree,w)
         print(f"Layer structure for weight {w}: {layerstructure_NCF}")
         
         
@@ -42,10 +42,13 @@ if __name__ == "__main__":
             if i % 100 == 0:
                 print(f"Simulation {i+1}/{num_networks} started at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
             
-            BN = boolforge.random_network(N=12,n=avg_degree,layer_structure = layerstructure_NCF, STRONGLY_CONNECTED = True)
+            BN = boolforge.random_network(N=12,
+                                          n=avg_degree,
+                                          layer_structure = layerstructure_NCF, 
+                                          strongly_connected = True)
             
             
-            robmetrics = BN.get_attractors_and_robustness_measures_synchronous_exact()
+            robmetrics = BN.get_attractors_and_robustness_synchronous_exact()
 
             
             all_basin_coherences.append(robmetrics["BasinCoherence"])

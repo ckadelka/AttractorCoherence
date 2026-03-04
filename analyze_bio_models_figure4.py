@@ -23,12 +23,13 @@ max_N = 20
 repository = 'expert-curated (ckadelka)'
 
 #simulation parameters
-EXACT = True #should only use True for bio models. To properly use False, we need to fix source nodes in the models
+exact = True #should only use True for bio models. To properly use False, we need to fix source nodes in the models
 number_different_IC = 100
 max_n_fixed_source_networks = 16
 
 #extract networks and remove non-essential regulations
-bns,urls_loaded,urls_not_loaded = boolforge.get_bio_models_from_repository(repository)
+dummy_dict = boolforge.get_bio_models_from_repository(repository)
+bns = dummy_dict['BooleanNetworks']
 for index,bn in enumerate(bns):
     bn.simplify_functions()
 
@@ -64,10 +65,10 @@ for ii,index in enumerate(good_indices):
     bio_infos.append([])
     for jj,bn in enumerate(bns_to_analyze[ii]):
         print(index,jj,bn.N)
-        if EXACT:
-            bio_infos[-1].append(bn.get_attractors_and_robustness_measures_synchronous_exact())
+        if exact:
+            bio_infos[-1].append(bn.get_attractors_and_robustness_synchronous_exact())
         else:
-            bio_infos[-1].append(bn.get_attractors_and_robustness_measures_synchronous(number_different_IC=number_different_IC))
+            bio_infos[-1].append(bn.get_attractors_and_robustness_synchronous(number_different_IC=number_different_IC))
 
 #Store results
 basin_sizes = []
@@ -86,9 +87,9 @@ for ii,index in enumerate(good_indices):
         number_attractors = len(attractors)
         attractor_lengths.append(list(map(len,attractors)))
         n_attractors.append([number_attractors] * number_attractors)
-        basin_sizes.append(bio_infos[ii][jj]['BasinSizes' if EXACT else 'BasinSizesApproximation'])
-        basin_coherences.append(bio_infos[ii][jj]['BasinCoherence' if EXACT else 'BasinCoherenceApproximation'])
-        basin_fragility.append(bio_infos[ii][jj]['BasinFragility' if EXACT else 'BasinFragilityApproximation'])
+        basin_sizes.append(bio_infos[ii][jj]['BasinSizes' if exact else 'BasinSizesApproximation'])
+        basin_coherences.append(bio_infos[ii][jj]['BasinCoherence' if exact else 'BasinCoherenceApproximation'])
+        basin_fragility.append(bio_infos[ii][jj]['BasinFragility' if exact else 'BasinFragilityApproximation'])
         attractor_coherences.append(bio_infos[ii][jj]['AttractorCoherence'])
         attractor_fragility.append(bio_infos[ii][jj]['AttractorFragility'])
         model_ids.append([index] * number_attractors)
@@ -98,7 +99,7 @@ res = []
 for list_of_lists in [attractor_lengths,n_attractors,basin_sizes,basin_coherences,
                       attractor_coherences,basin_fragility,attractor_fragility,
                       model_ids,model_repeats]:
-    res.append(boolforge.flatten(list_of_lists))
+    res.append(boolforge.utils.flatten(list_of_lists))
 res=np.array(res)
 
 #turn fragility into 1-fragility
@@ -106,9 +107,9 @@ res[5:7] = 1-res[5:7]
 
 names_res = ['length of attractor','number of attractors','basin size','basin coherence','attractor coherence','1 - basin fragility','1 - attractor fragility','model ID','model repeat']
 
-#suffix_plot = ', '.join(['%s = %s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(EXACT)],['maxN','maxdegree','EXACT'])])
-suffix_plot = '' #', '.join(['%s = %s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(EXACT)],['maxN','maxdegree','EXACT'])])
-suffix_save = 'bio_'+'_'.join(['%s%s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(EXACT)],['maxN','maxdegree','EXACT'])])
+#suffix_plot = ', '.join(['%s = %s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(exact)],['maxN','maxdegree','exact'])])
+suffix_plot = '' #', '.join(['%s = %s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(exact)],['maxN','maxdegree','exact'])])
+suffix_save = 'bio_'+'_'.join(['%s%s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(exact)],['maxN','maxdegree','exact'])])
 
 # spearman_mat,pearson_mat = utils.compute_correlation_matrices(res[:-2])
 # utils.plot_correlation_matrix(spearman_mat,'spearman',names_res[:-2],suffix_plot,suffix_save)

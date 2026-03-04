@@ -22,15 +22,17 @@ max_N = 20
 repository = 'expert-curated (ckadelka)'
 
 #simulation parameters
-EXACT = True #should only use True for bio models. To properly use False, we need to fix source nodes in the models
+exact = True #should only use True for bio models. To properly use False, we need to fix source nodes in the models
 number_different_IC = 100
+LOW_RAM_USAGE = True
 
 #number of null models per biological network: test with 2, run with 100
 n_null_models = 100
 
 
 #extract networks and remove non-essential regulations
-bns,urls_loaded,urls_not_loaded = boolforge.get_bio_models_from_repository(repository)
+dummy_dict = boolforge.get_bio_models_from_repository(repository)
+bns = dummy_dict['BooleanNetworks']
 for index,bn in enumerate(bns):
     bn.simplify_functions()
 
@@ -42,28 +44,32 @@ for i,bn in enumerate(bns):
         good_indices.append(i)
 good_indices = np.array(good_indices)
 
-import boolforge
 bio_infos = []
 for index in good_indices:
     print(index,bns[index].N)
-    if EXACT:
-        bio_infos.append(bns[index].get_attractors_and_robustness_measures_synchronous_exact())
+    if exact:
+        bio_infos.append(bns[index].get_attractors_and_robustness_synchronous_exact())
     else:
-        bio_infos.append(bns[index].get_attractors_and_robustness_measures_synchronous(number_different_IC=number_different_IC))
+        bio_infos.append(bns[index].get_attractors_and_robustness_synchronous(number_different_IC=number_different_IC))
 
 random_infos = []
-#rbns = [] #commented out to same RAM: the RBN is not needed later, only random_infos
+rbns = []
 for index in good_indices:
     random_infos.append([])
-    #rbns.append([])
+    rbns.append([])
     for _ in range(n_null_models):
-        rbn = boolforge.random_null_model(bns[index],PRESERVE_BIAS=False,PRESERVE_CANALIZING_DEPTH=False)
-        #rbns[-1].append(rbn)
-        if EXACT:
-            random_infos[-1].append(rbn.get_attractors_and_robustness_measures_synchronous_exact())
+        rbn = boolforge.random_null_model(bns[index],
+                                          preserve_bias=False,
+                                          preserve_canalizing_depth=False)
+        if not LOW_RAM_USAGE:
+            rbns[-1].append(rbn)
+        if exact:
+            random_infos[-1].append(rbn.get_attractors_and_robustness_synchronous_exact())
         else:
-            random_infos[-1].append(rbn.get_attractors_and_robustness_measures_synchronous(number_different_IC=number_different_IC))
+            random_infos[-1].append(rbn.get_attractors_and_robustness_synchronous(number_different_IC=number_different_IC))
         print(index,_)
+        if LOW_RAM_USAGE: #don't store STG
+            random_infos[-1]['STG'] = {}
         
 
 attractors_bio = [info['Attractors'] for info in bio_infos]
@@ -76,16 +82,16 @@ coherences_random, entropies_random = [], []
 for i in range(len(bio_infos)):
     if n_source_nodes[i]==0:
         coherences_bio.append(bio_infos[i]['Coherence'])
-        entropies_bio.append(boolforge.get_entropy_of_basin_size_distribution(bio_infos[i]['BasinSizes']))
+        entropies_bio.append(boolforge.boolean_network.get_entropy_of_basin_size_distribution(bio_infos[i]['BasinSizes']))
         coherences_random.append([random_infos[i][j]['Coherence'] for j in range(n_null_models)])
-        entropies_random.append([boolforge.get_entropy_of_basin_size_distribution(random_infos[i][j]['BasinSizes']) for j in range(n_null_models)])
+        entropies_random.append([boolforge.boolean_network.get_entropy_of_basin_size_distribution(random_infos[i][j]['BasinSizes']) for j in range(n_null_models)])
     else:
         coherences_bio.append(bio_infos[i]['Coherence']*sizes[i]/(sizes[i]-n_source_nodes[i]))
         attractors = bio_infos[i]['Attractors']
         basin_sizes = bio_infos[i]['BasinSizes']
         indices_source_nodes = indices_source_nodes_bio[i]
         source_node_associations = np.array([boolforge.bin2dec(np.array(boolforge.dec2bin(attractor[0],sizes[i]))[indices_source_nodes]) for attractor in attractors])
-        entropies_bio.append(np.mean([boolforge.get_entropy_of_basin_size_distribution(2**n_source_nodes[i] * basin_sizes[source_node_associations==k]) for k in range(2**n_source_nodes[i])]))
+        entropies_bio.append(np.mean([boolforge.boolean_network.get_entropy_of_basin_size_distribution(2**n_source_nodes[i] * basin_sizes[source_node_associations==k]) for k in range(2**n_source_nodes[i])]))
         
         coherences_random.append([random_infos[i][j]['Coherence']*sizes[i]/(sizes[i]-n_source_nodes[i]) for j in range(n_null_models)])
         entropies_random.append([])
@@ -93,7 +99,7 @@ for i in range(len(bio_infos)):
             attractors = random_infos[i][j]['Attractors']
             basin_sizes = random_infos[i][j]['BasinSizes']
             source_node_associations = np.array([boolforge.bin2dec(np.array(boolforge.dec2bin(attractor[0],sizes[i]))[indices_source_nodes]) for attractor in attractors])
-            entropies_random[-1].append(np.mean([boolforge.get_entropy_of_basin_size_distribution(2**n_source_nodes[i] * basin_sizes[source_node_associations==k]) for k in range(2**n_source_nodes[i])]))
+            entropies_random[-1].append(np.mean([boolforge.boolean_network.get_entropy_of_basin_size_distribution(2**n_source_nodes[i] * basin_sizes[source_node_associations==k]) for k in range(2**n_source_nodes[i])]))
                         
 
 coherences_bio = np.array(coherences_bio)
@@ -101,7 +107,7 @@ entropies_bio = np.array(entropies_bio)
 coherences_random = np.array(coherences_random)
 entropies_random = np.array(entropies_random)
 
-suffix_save = 'bio_'+'_'.join(['%s%s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(EXACT)],['maxN','maxdegree','EXACT'])])
+suffix_save = 'bio_'+'_'.join(['%s%s' % (name,str(val)) for val,name in zip([max_N,max_degree,int(exact)],['maxN','maxdegree','exact'])])
 
 f,ax = plt.subplots(figsize=(3,3))
 im = ax.plot(coherences_bio,coherences_random.mean(1),marker='x',linestyle='None')
@@ -168,7 +174,7 @@ print(stats.ttest_rel(coherences_bio, coherences_random.mean(1), alternative='gr
 #     max_size = min_size
 #     which = np.bitwise_and(sizes<=max_size,sizes>=min_size)
 #     # f,ax = plt.subplots()
-#     # ax.plot(boolforge.flatten(entropies_random[which]),boolforge.flatten(coherences_random[which]),'bo')
+#     # ax.plot(boolforge.utils.flatten(entropies_random[which]),boolforge.utils.flatten(coherences_random[which]),'bo')
 #     # ax.plot(entropies_bio[which],coherences_bio[which],'rx')
 
     

@@ -37,10 +37,13 @@ if __name__ == "__main__":
             if i % 100 == 0:
                 print(f"Simulation {i+1}/{num_networks} started at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
             
-            BN = boolforge.random_network(N=12,n=avg_degree,depth = cd, EXACT_DEPTH = True, STRONGLY_CONNECTED = True)
+            BN = boolforge.random_network(N=12,
+                                          n=avg_degree,
+                                          depth = cd, 
+                                          exact_depth= True, 
+                                          strongly_connected = True)
             
-            
-            robmetrics = BN.get_attractors_and_robustness_measures_synchronous_exact()
+            robmetrics = BN.get_attractors_and_robustness_synchronous_exact()
             
             all_basin_coherences.append(robmetrics["BasinCoherence"])
             all_basin_sizes.append(robmetrics["BasinSizes"])

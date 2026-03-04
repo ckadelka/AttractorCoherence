@@ -129,9 +129,9 @@ def correct_for_fixed_sources(basin_sizes, basin_coherence, attractor_coherence,
         
         return basin_sizes_fixed_sources,basin_coherence_fixed_sources,attractor_coherence_fixed_sources
 
-def run_random_BN_analysis(N,n,k,STRONGLY_CONNECTED,indegree_distribution,EXACT,n_networks,number_different_IC=1000):
-    suffix_plot = ', '.join(['%s = %s' % (name,str(val)) for val,name in zip([N,n,k,int(STRONGLY_CONNECTED),indegree_distribution],['N','n','k','SC','distr'])])
-    suffix_save = '_'.join(['%s%s' % (name,str(val)) for val,name in zip([N,n,k,int(STRONGLY_CONNECTED),indegree_distribution,int(EXACT),n_networks,number_different_IC],['N','n','k','SC','distr','EXACT','nnetworks','numberdifferentIC'])])
+def run_random_BN_analysis(N,n,k,strongly_connected,indegree_distribution,exact,n_networks,number_different_IC=1000):
+    suffix_plot = ', '.join(['%s = %s' % (name,str(val)) for val,name in zip([N,n,k,int(strongly_connected),indegree_distribution],['N','n','k','SC','distr'])])
+    suffix_save = '_'.join(['%s%s' % (name,str(val)) for val,name in zip([N,n,k,int(strongly_connected),indegree_distribution,int(exact),n_networks,number_different_IC],['N','n','k','SC','distr','exact','nnetworks','numberdifferentIC'])])
 
     #simulation
     basin_sizes = []
@@ -142,15 +142,19 @@ def run_random_BN_analysis(N,n,k,STRONGLY_CONNECTED,indegree_distribution,EXACT,
     attractor_coherences = []
     attractor_fragility = []
     for i in range(n_networks):
-        bn = boolforge.random_network(N=N,n=n,k=k,STRONGLY_CONNECTED=STRONGLY_CONNECTED,indegree_distribution=indegree_distribution)
-        if EXACT:
-            info = bn.get_attractors_and_robustness_measures_synchronous_exact()
+        bn = boolforge.random_network(N=N,
+                                      n=n,
+                                      depth=k,
+                                      strongly_connected=strongly_connected,
+                                      indegree_distribution=indegree_distribution)
+        if exact:
+            info = bn.get_attractors_and_robustness_synchronous_exact()
             number_attractors = info['ExactNumberOfAttractors']
             basins = info['BasinSizes']
             basin_coh = info['BasinCoherence']
             basin_frag = info['BasinFragility']
         else:
-            info = bn.get_attractors_and_robustness_measures_synchronous_exact()
+            info = bn.get_attractors_and_robustness_synchronous_exact()
             number_attractors = info['LowerBoundOfNumberOfAttractors']
             basins = info['BasinSizesApproximation']
             basin_coh = info['BasinCoherenceApproximation']
@@ -165,7 +169,7 @@ def run_random_BN_analysis(N,n,k,STRONGLY_CONNECTED,indegree_distribution,EXACT,
     
     res = []
     for list_of_lists in [attractor_lengths,n_attractors,basin_sizes,basin_coherences,attractor_coherences,basin_fragility,attractor_fragility]:
-        res.append(boolforge.flatten(list_of_lists))
+        res.append(boolforge.utils.flatten(list_of_lists))
     res=np.array(res)
     
     #turn fragility into 1-fragility
